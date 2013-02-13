@@ -60,5 +60,6 @@
 /** If implemented, this method is called if the layout style of the grid view is horizontal */
 - (CGFloat)gridView:(NRGridView*)gridView widthForFooterInSection:(NSInteger)section;
 
+- (CGSize)gridView:(NRGridView*)gridView gridCellSizeInSection:(NSInteger)section; // no implemenation = calculate 
 
 @end
