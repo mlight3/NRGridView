@@ -112,6 +112,7 @@ static CGSize const kNRGridViewDefaultCellSize = {50, 70};
         unsigned int heightForFooter:1;  
         unsigned int widthForFooter:1;
         unsigned int hasTranslucentNavigationBar:1;
+        unsigned int gridCellSize:1;
     } _gridViewDataSourceRespondsTo;
 }
 

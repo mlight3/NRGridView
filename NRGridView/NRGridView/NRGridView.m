@@ -444,6 +444,7 @@ static CGFloat const _kNRGridViewDefaultHeaderWidth = 30.; // layout style = hor
                                                                      && [[(UIViewController*)[self dataSource] parentViewController] isKindOfClass:[UINavigationController class]]
                                                                      && [[(UINavigationController*)[(UIViewController*)[self dataSource] parentViewController] navigationBar] isTranslucent]);
 
+        _gridViewDataSourceRespondsTo.gridCellSize = [dataSource respondsToSelector:@selector(gridView:gridCellSizeInSection:)];
         [self didChangeValueForKey:@"dataSource"];
     }
 }
@@ -959,42 +960,43 @@ static CGFloat const _kNRGridViewDefaultHeaderWidth = 30.; // layout style = hor
 - (CGRect)__rectForCellAtIndexPath:(NSIndexPath*)indexPath 
                   usingLayoutStyle:(NRGridViewLayoutStyle)layoutStyle
 {
+    CGSize cellSize = [self __cellSizeInSection:indexPath.section];
     CGRect cellFrame = CGRectZero;
-    cellFrame.size = [self cellSize];
+    cellFrame.size = cellSize;
 
     NRGridViewSectionLayout *sectionLayout = [self __sectionLayoutAtIndex:indexPath.section];
     
     if(layoutStyle == NRGridViewLayoutStyleVertical){
-        NSInteger numberOfCellsPerLine = [self __numberOfCellsPerLineUsingSize:[self cellSize]
+        NSInteger numberOfCellsPerLine = [self __numberOfCellsPerLineUsingSize:cellSize
                                                                    layoutStyle:layoutStyle
                                                                          frame:[self bounds]];
         
         if(numberOfCellsPerLine > 0)
         {
-            CGFloat lineWidth = numberOfCellsPerLine*[self cellSize].width;
+            CGFloat lineWidth = numberOfCellsPerLine*cellSize.width;
             
             NSInteger currentLine = (NSInteger)floor(indexPath.itemIndex/numberOfCellsPerLine);
             NSInteger currentColumn = (NSInteger)(indexPath.itemIndex - numberOfCellsPerLine*currentLine);
             
-            cellFrame.origin.y = CGRectGetMinY([sectionLayout contentFrame]) + floor([self cellSize].height * currentLine);
-            cellFrame.origin.x = floor([self cellSize].width * currentColumn) + floor((CGRectGetWidth([self bounds]) - ([self contentInset].left + [self contentInset].right))/2. - lineWidth/2.);
+            cellFrame.origin.y = CGRectGetMinY([sectionLayout contentFrame]) + floor(cellSize.height * currentLine);
+            cellFrame.origin.x = floor(cellSize.width * currentColumn) + floor((CGRectGetWidth([self bounds]) - ([self contentInset].left + [self contentInset].right))/2. - lineWidth/2.);
         }
         
     }else if(layoutStyle == NRGridViewLayoutStyleHorizontal)
     {
-        NSInteger numberOfCellsPerColumn = [self __numberOfCellsPerColumnUsingSize:[self cellSize]
+        NSInteger numberOfCellsPerColumn = [self __numberOfCellsPerColumnUsingSize:cellSize
                                                                        layoutStyle:layoutStyle
                                                                              frame:[self bounds]];
         
         if(numberOfCellsPerColumn > 0)
         {
-            CGFloat columnHeight = numberOfCellsPerColumn*[self cellSize].height;
+            CGFloat columnHeight = numberOfCellsPerColumn*cellSize.height;
             
             NSInteger currentColumn = (NSInteger)floor(indexPath.itemIndex/numberOfCellsPerColumn);
             NSInteger currentLine = (NSInteger)(indexPath.itemIndex - numberOfCellsPerColumn*currentColumn);
             
-            cellFrame.origin.x = CGRectGetMinX([sectionLayout contentFrame]) + floor([self cellSize].width * currentColumn);
-            cellFrame.origin.y = floor([self cellSize].height * currentLine) + floor((CGRectGetHeight([self bounds]) - ([self contentInset].top + [self contentInset].bottom))/2. - columnHeight/2.);
+            cellFrame.origin.x = CGRectGetMinX([sectionLayout contentFrame]) + floor(cellSize.width * currentColumn);
+            cellFrame.origin.y = floor(cellSize.height * currentLine) + floor((CGRectGetHeight([self bounds]) - ([self contentInset].top + [self contentInset].bottom))/2. - columnHeight/2.);
         }
         
     }
@@ -1074,6 +1076,20 @@ static CGFloat const _kNRGridViewDefaultHeaderWidth = 30.; // layout style = hor
     }
         
     return [dequeuedCell autorelease];
+}
+
+- (CGSize)__cellSizeInSection:(NSInteger)section {
+    
+    CGSize cellSize = CGSizeZero;
+    
+    if (_gridViewDataSourceRespondsTo.gridCellSize) {
+        cellSize = [[self dataSource] gridView:self gridCellSizeInSection:section];
+    }
+    
+    if (CGSizeEqualToSize(cellSize, CGSizeZero)) {
+        cellSize = [self cellSize];
+    }
+    return cellSize;
 }
 
 #pragma mark - Scrolling
@@ -1277,10 +1293,12 @@ static CGFloat const _kNRGridViewDefaultHeaderWidth = 30.; // layout style = hor
                                                                    usingLayoutStyle:[self layoutStyle]
                                                                               frame:frame]);
         
+        CGSize cellSize = [self __cellSizeInSection:sectionIndex];
+        
         if([self layoutStyle] == NRGridViewLayoutStyleVertical)
         {
             CGFloat contentHeightInSection = [self __heightForContentInSection:sectionIndex 
-                                                                   forCellSize:[self cellSize] 
+                                                                   forCellSize:cellSize
                                                               usingLayoutStyle:[self layoutStyle]
                                                                          frame:frame];
                         
@@ -1303,7 +1321,7 @@ static CGFloat const _kNRGridViewDefaultHeaderWidth = 30.; // layout style = hor
         }else if([self layoutStyle] == NRGridViewLayoutStyleHorizontal)
         {
             CGFloat contentWidthInSection = [self __widthForContentInSection:sectionIndex 
-                                                                 forCellSize:[self cellSize] 
+                                                                 forCellSize:cellSize
                                                             usingLayoutStyle:[self layoutStyle]
                                                                        frame:frame];
             
@@ -1570,31 +1588,33 @@ static CGFloat const _kNRGridViewDefaultHeaderWidth = 30.; // layout style = hor
         NSInteger firstVisibleCellIndex=0;
         NSInteger cellIndexesRange=0;
         
+        CGSize cellSize = [self __cellSizeInSection:sectionIndex];
+        
         if(layoutStyle == NRGridViewLayoutStyleVertical){
-            NSInteger numberOfCellsPerLine = [self __numberOfCellsPerLineUsingSize:[self cellSize]
+            NSInteger numberOfCellsPerLine = [self __numberOfCellsPerLineUsingSize:cellSize
                                                                        layoutStyle:layoutStyle
                                                                              frame:[self bounds]];
             
-            NSInteger firstVisibleLineIndex = floor((CGRectGetMinY([self bounds])-CGRectGetMinY(sectionContentFrame)) / [self cellSize].height);
+            NSInteger firstVisibleLineIndex = floor((CGRectGetMinY([self bounds])-CGRectGetMinY(sectionContentFrame)) / cellSize.height);
             if(firstVisibleLineIndex<0)
                 firstVisibleLineIndex = 0;
             
-            NSInteger lastVisibleLineIndex = floor((CGRectGetMaxY([self bounds])-CGRectGetMinY(sectionContentFrame)) / [self cellSize].height);
+            NSInteger lastVisibleLineIndex = floor((CGRectGetMaxY([self bounds])-CGRectGetMinY(sectionContentFrame)) / cellSize.height);
             
             firstVisibleCellIndex = firstVisibleLineIndex * numberOfCellsPerLine;
             cellIndexesRange = ((lastVisibleLineIndex+1) * numberOfCellsPerLine) - firstVisibleCellIndex;
             
         }else if(layoutStyle == NRGridViewLayoutStyleHorizontal)
         {
-            NSInteger numberOfCellsPerColumn = [self __numberOfCellsPerColumnUsingSize:[self cellSize]
+            NSInteger numberOfCellsPerColumn = [self __numberOfCellsPerColumnUsingSize:cellSize
                                                                            layoutStyle:layoutStyle
                                                                                  frame:[self bounds]];
             
-            NSInteger firstVisibleColumnIndex = floor((CGRectGetMinX([self bounds])-CGRectGetMinX(sectionContentFrame)) / [self cellSize].width);
+            NSInteger firstVisibleColumnIndex = floor((CGRectGetMinX([self bounds])-CGRectGetMinX(sectionContentFrame)) / cellSize.width);
             if(firstVisibleColumnIndex<0)
                 firstVisibleColumnIndex = 0;
             
-            NSInteger lastVisibleColumnIndex = floor((CGRectGetMaxX([self bounds])-CGRectGetMinX(sectionContentFrame)) / [self cellSize].width);
+            NSInteger lastVisibleColumnIndex = floor((CGRectGetMaxX([self bounds])-CGRectGetMinX(sectionContentFrame)) / cellSize.width);
             
             firstVisibleCellIndex = firstVisibleColumnIndex * numberOfCellsPerColumn;
             cellIndexesRange = ((lastVisibleColumnIndex+1) * numberOfCellsPerColumn) - firstVisibleCellIndex;
