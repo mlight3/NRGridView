@@ -1665,13 +1665,14 @@ static CGFloat const _kNRGridViewDefaultHeaderWidth = 30.; // layout style = hor
         [cell setFrame:frame];
     
     [cell setSelected:[_selectedCellsIndexPaths containsObject:indexPath]];
-  
+
+    [self insertSubview:cell atIndex:0];
+
     if(_gridViewDelegateRespondsTo.willDisplayCell)
         [[self delegate] gridView:self
                   willDisplayCell:cell
                       atIndexPath:indexPath];
     
-    [self insertSubview:cell atIndex:0];
     [_visibleCellsSet addObject:cell];
 }
 
@@ -1689,10 +1690,10 @@ static CGFloat const _kNRGridViewDefaultHeaderWidth = 30.; // layout style = hor
         CGPoint gridHeaderOrigin = CGPointZero;
         
         if([self isGridHeaderViewSticky]){
-            gridHeaderOrigin = CGPointMake(([self layoutStyle] == NRGridViewLayoutStyleHorizontal
+            gridHeaderOrigin = CGPointMake(([self layoutStyle] == NRGridViewLayoutStyleHorizontal && [self contentOffset].x > 0
                                             ? [self contentOffset].x
                                             : 0.),
-                                           ([self layoutStyle] == NRGridViewLayoutStyleVertical
+                                           ([self layoutStyle] == NRGridViewLayoutStyleVertical && [self contentOffset].y > 0
                                             ? [self contentOffset].y
                                             : 0.));
         }
@@ -1722,6 +1723,14 @@ static CGFloat const _kNRGridViewDefaultHeaderWidth = 30.; // layout style = hor
                                            ([self layoutStyle] == NRGridViewLayoutStyleVertical
                                             ? ([self contentOffset].y + CGRectGetHeight([self bounds]) - CGRectGetHeight(gridFooterViewFrame))
                                             : 0.));
+            
+            if([self layoutStyle] == NRGridViewLayoutStyleHorizontal
+               && gridFooterOrigin.x > [self contentSize].width - CGRectGetWidth(gridFooterViewFrame))
+                gridFooterOrigin.x = [self contentSize].width - CGRectGetWidth(gridFooterViewFrame);
+            else if([self layoutStyle] == NRGridViewLayoutStyleVertical
+                    && gridFooterOrigin.y > [self contentSize].height - CGRectGetHeight(gridFooterViewFrame))
+                gridFooterOrigin.y = [self contentSize].height - CGRectGetHeight(gridFooterViewFrame);
+            
         }
         else {
             gridFooterOrigin = CGPointMake(([self layoutStyle] == NRGridViewLayoutStyleHorizontal
@@ -1972,7 +1981,8 @@ static CGFloat const _kNRGridViewDefaultHeaderWidth = 30.; // layout style = hor
 {
     if( (gestureRecognizer == _longPressGestureRecognizer || gestureRecognizer == _tapGestureRecognizer)
        && (([[touch view] isKindOfClass:[UIControl class]] && [[touch view] isUserInteractionEnabled])
-           || [touch view] == [self gridHeaderView] || [touch view] == [self gridFooterView]))
+           || [[touch view] isDescendantOfView:[self gridHeaderView]] || [[touch view] isDescendantOfView:[self gridFooterView]])
+       )
         return NO;
     else if(gestureRecognizer == _longPressGestureRecognizer)
         return _gridViewDelegateRespondsTo.didLongPressCell;
