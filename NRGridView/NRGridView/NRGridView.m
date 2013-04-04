@@ -1062,6 +1062,8 @@ static CGFloat const _kNRGridViewDefaultHeaderWidth = 30.; // layout style = hor
             [_reusableCellsSet removeObject:dequeuedCell];
         }
         
+        [dequeuedCell setAlpha:1.];
+        
         /** I have commented the follow shorter way to find out a reusable cell because predicates are OVERSLOW.
          *
         NSPredicate *dequeueablePredicate = [NSPredicate predicateWithFormat:@"reuseIdentifier isEqualToString: %@",identifier];
@@ -1105,7 +1107,7 @@ static CGFloat const _kNRGridViewDefaultHeaderWidth = 30.; // layout style = hor
        && CGRectContainsRect([self bounds], sectionRect))
             return; // no scroll, as specified in NRGridViewScrollPositionNone's description.
     
-    if([self layoutStyle] == NRGridViewLayoutStyleVertical)
+    if([self layoutStyle] == NRGridViewLayoutStyleVertical && [self contentSize].height > CGRectGetHeight([self bounds]))
     {
         if(scrollPosition == NRGridViewScrollPositionNone){
             if(CGRectGetMaxY(sectionRect) > CGRectGetMaxY([self bounds]))
@@ -1135,7 +1137,7 @@ static CGFloat const _kNRGridViewDefaultHeaderWidth = 30.; // layout style = hor
         else if(contentOffsetForSection.y> [self contentSize].height-CGRectGetHeight([self bounds]))
             contentOffsetForSection.y = [self contentSize].height - CGRectGetHeight([self bounds]);
         
-    }else if([self layoutStyle] == NRGridViewLayoutStyleHorizontal)
+    }else if([self layoutStyle] == NRGridViewLayoutStyleHorizontal && [self contentSize].width > CGRectGetWidth([self bounds]))
     {
         if(scrollPosition == NRGridViewScrollPositionNone){
             if(CGRectGetMaxX(sectionRect) > CGRectGetMaxX([self bounds]))
@@ -1179,7 +1181,7 @@ static CGFloat const _kNRGridViewDefaultHeaderWidth = 30.; // layout style = hor
        && CGRectContainsRect([self bounds], itemRect))
         return; // no scroll, as specified in NRGridViewScrollPositionNone's description.
     
-    if([self layoutStyle] == NRGridViewLayoutStyleVertical)
+    if([self layoutStyle] == NRGridViewLayoutStyleVertical && [self contentSize].height > CGRectGetHeight([self bounds]))
     {
         contentOffsetForItem.x = [self contentOffset].x;
         
@@ -1211,7 +1213,11 @@ static CGFloat const _kNRGridViewDefaultHeaderWidth = 30.; // layout style = hor
         else if(contentOffsetForItem.y > [self contentSize].height - CGRectGetHeight([self bounds]))
             contentOffsetForItem.y = [self contentSize].height - CGRectGetHeight([self bounds]);
         
-    }else if([self layoutStyle] == NRGridViewLayoutStyleHorizontal)
+        
+        if(scrollPosition == NRGridViewScrollPositionAtTop)
+            contentOffsetForItem.y -= CGRectGetHeight([self rectForHeaderInSection:indexPath.section]);
+        
+    }else if([self layoutStyle] == NRGridViewLayoutStyleHorizontal && [self contentSize].width > CGRectGetWidth([self bounds]))
     {
         contentOffsetForItem.y = [self contentOffset].y;
 
@@ -1241,6 +1247,10 @@ static CGFloat const _kNRGridViewDefaultHeaderWidth = 30.; // layout style = hor
             contentOffsetForItem.x = 0;
         else if(contentOffsetForItem.x > [self contentSize].width - CGRectGetWidth([self bounds]))
             contentOffsetForItem.x = [self contentSize].width - CGRectGetWidth([self bounds]);
+        
+        if(scrollPosition == NRGridViewScrollPositionAtTop)
+            contentOffsetForItem.x -= CGRectGetWidth([self rectForHeaderInSection:indexPath.section]);
+
     }
     
     [self setContentOffset:contentOffsetForItem animated:animated];
