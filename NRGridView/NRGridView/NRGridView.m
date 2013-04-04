@@ -283,7 +283,7 @@ static CGFloat const _kNRGridViewDefaultHeaderWidth = 30.; // layout style = hor
 @dynamic selectedCellIndexPath/**Deprecated*/;
 @synthesize allowsMultipleSelections   = _allowsMultipleSelections;
 
-#pragma mark - Init
+#pragma mark - Initjkl;4
 
 - (void)__commonInit
 {
@@ -394,6 +394,16 @@ static CGFloat const _kNRGridViewDefaultHeaderWidth = 30.; // layout style = hor
 
 - (NSIndexPath*)indexPathForSelectedCell { return [_selectedCellsIndexPaths lastObject]; }
 - (NSArray*)indexPathsForSelectedCells { return [NSArray arrayWithArray:_selectedCellsIndexPaths]; }
+
+- (UIView *)headerViewForSection:(NSInteger)section {
+    NRGridViewSectionLayout* sectionLayout = [self __sectionLayoutAtIndex:section];
+    return sectionLayout.headerView;
+}
+
+- (UIView *)footerViewForSection:(NSInteger)section {
+    NRGridViewSectionLayout* sectionLayout = [self __sectionLayoutAtIndex:section];
+    return sectionLayout.footerView;
+}
 
 #pragma mark - Setters
 

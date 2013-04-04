@@ -200,4 +200,7 @@ static CGSize const kNRGridViewDefaultCellSize = {50, 70};
 - (void)unhighlightPressuredCellAnimated:(BOOL)animated;
 - (NSIndexPath*)indexPathForLongPressuredCell;
 
+- (UIView *)headerViewForSection:(NSInteger)section;
+- (UIView *)footerViewForSection:(NSInteger)section;
+
 @end
