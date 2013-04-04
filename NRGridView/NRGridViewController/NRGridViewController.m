@@ -120,7 +120,7 @@
         [super loadView];
     else{
         // Create the gridView manually
-        NRGridView *tempGridView = [[NRGridView alloc] initWithLayoutStyle:[self gridLayoutStyle]];
+        NRGridView *tempGridView = [[NRGridView alloc] initWithLayoutStyle:[self gridLayoutStyle] style:NRGridViewStylePlain];
         [tempGridView setCellSize:CGSizeMake(160, 120)];
         [tempGridView setDelegate:self];
         [tempGridView setDataSource:self];
@@ -168,7 +168,6 @@
 
     return cell;
 }
-
 
 
 #pragma mark - Memory Management

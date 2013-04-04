@@ -194,7 +194,7 @@ static BOOL const _kNRGridViewSampleCrazyScrollEnabled = NO; // For the lulz.
     if (section%2 == 0) {
         UIView * view = [[UIView alloc] initWithFrame:CGRectMake(0, 0, 0, 0)];
         view.backgroundColor = [UIColor cyanColor];
-        return view;
+        return [view autorelease];
     }
     return nil;
 }

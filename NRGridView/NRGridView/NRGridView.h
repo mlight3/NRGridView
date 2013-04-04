@@ -52,6 +52,12 @@ typedef enum{
 } NRGridViewLayoutStyle;
 
 typedef enum{
+    NRGridViewStylePlain,
+    NRGridViewStyleGrouped
+} NRGridViewStyle;
+
+
+typedef enum{
     NRGridViewScrollPositionNone,   // Please refer to UITableViewScrollPositionNone's description.
     NRGridViewScrollPositionAtTop,
     NRGridViewScrollPositionAtLeft  = NRGridViewScrollPositionAtTop, // for horizontal layout convention
@@ -118,7 +124,10 @@ static CGSize const kNRGridViewDefaultCellSize = {50, 70};
 }
 
 - (id)initWithLayoutStyle:(NRGridViewLayoutStyle)layoutStyle;
+- (id)initWithLayoutStyle:(NRGridViewLayoutStyle)layoutStyle style:(NRGridViewStyle)style;
+
 @property (nonatomic, assign) NRGridViewLayoutStyle layoutStyle;
+@property (nonatomic, assign) NRGridViewStyle style;
 
 @property (nonatomic, assign) IBOutlet id<NRGridViewDelegate> delegate;
 @property (nonatomic, assign) IBOutlet id<NRGridViewDataSource> dataSource;

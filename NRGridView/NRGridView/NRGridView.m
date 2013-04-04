@@ -149,6 +149,7 @@ static CGFloat const _kNRGridViewHeaderContentPadding = 10.;
 {
     [self setHeaderView:nil];
     [self setFooterView:nil];
+    [self setBackgroundView:nil];
 
     [super dealloc];
 }
@@ -281,6 +282,7 @@ static CGFloat const _kNRGridViewDefaultHeaderWidth = 30.; // layout style = hor
 @dynamic delegate; // Dynamic because inherited from UIScrollView's delegate property.
 
 @synthesize layoutStyle = _layoutStyle;
+@synthesize style = _style;
 @synthesize dataSource = _dataSource;
 @synthesize cellSize = _cellSize;
 @synthesize longPressOptions = _longPressOptions;
@@ -330,6 +332,18 @@ static CGFloat const _kNRGridViewDefaultHeaderWidth = 30.; // layout style = hor
     {
         [self __commonInit];
         [self setLayoutStyle:layoutStyle];
+        [self setStyle:NRGridViewStylePlain];
+    }
+    return self;
+}
+
+- (id)initWithLayoutStyle:(NRGridViewLayoutStyle)layoutStyle style:(NRGridViewStyle)style {
+    self = [super initWithFrame:CGRectZero];
+    if(self)
+    {
+        [self __commonInit];
+        [self setLayoutStyle:layoutStyle];
+        [self setStyle:style];
     }
     return self;
 }
@@ -840,34 +854,36 @@ static CGFloat const _kNRGridViewDefaultHeaderWidth = 30.; // layout style = hor
     NRGridViewSectionLayout *sectionLayout = [self __sectionLayoutAtIndex:section];
     CGRect sectionHeaderFrame =  [sectionLayout headerFrame];
     
-    CGPoint headerOffset = CGPointZero;
-    
-    if(_gridViewDataSourceRespondsTo.hasTranslucentNavigationBar)
-        headerOffset.y += CGRectGetHeight([[(UINavigationController*)[(UIViewController*)[self dataSource] parentViewController] navigationBar] frame]);
-    
-    
-    
-    if([self gridHeaderView] != nil && [self isGridHeaderViewSticky] ){
+    if ([self style] == NRGridViewStyleGrouped) {
+        CGPoint headerOffset = CGPointZero;
+        
+        if(_gridViewDataSourceRespondsTo.hasTranslucentNavigationBar)
+            headerOffset.y += CGRectGetHeight([[(UINavigationController*)[(UIViewController*)[self dataSource] parentViewController] navigationBar] frame]);
+        
+        
+        
+        if([self gridHeaderView] != nil && [self isGridHeaderViewSticky] ){
+            if(layoutStyle == NRGridViewLayoutStyleVertical){
+                headerOffset.y += CGRectGetHeight([[self gridHeaderView] frame]); 
+            }
+            else if(layoutStyle == NRGridViewLayoutStyleHorizontal){
+                headerOffset.x += CGRectGetWidth([[self gridHeaderView] frame]); 
+            }
+        }
+        
         if(layoutStyle == NRGridViewLayoutStyleVertical){
-            headerOffset.y += CGRectGetHeight([[self gridHeaderView] frame]); 
+            if(CGRectGetMinY(sectionHeaderFrame) < ([self contentOffset].y + headerOffset.y))
+                sectionHeaderFrame.origin.y = ([self contentOffset].y + headerOffset.y);
+            if(CGRectGetMaxY(sectionHeaderFrame) > CGRectGetMaxY([sectionLayout contentFrame]))
+                sectionHeaderFrame.origin.y = CGRectGetMaxY([sectionLayout contentFrame]) - CGRectGetHeight(sectionHeaderFrame) ;
+            
+        }else if(layoutStyle == NRGridViewLayoutStyleHorizontal){
+            if(CGRectGetMinX(sectionHeaderFrame) < [self contentOffset].x)
+                sectionHeaderFrame.origin.x = [self contentOffset].x;
+            if(CGRectGetMaxX(sectionHeaderFrame) > CGRectGetMaxX([sectionLayout contentFrame]))
+                sectionHeaderFrame.origin.x = CGRectGetMaxX([sectionLayout contentFrame]) - CGRectGetWidth(sectionHeaderFrame) ;
+            
         }
-        else if(layoutStyle == NRGridViewLayoutStyleHorizontal){
-            headerOffset.x += CGRectGetWidth([[self gridHeaderView] frame]); 
-        }
-    }
-    
-    if(layoutStyle == NRGridViewLayoutStyleVertical){
-        if(CGRectGetMinY(sectionHeaderFrame) < ([self contentOffset].y + headerOffset.y))
-            sectionHeaderFrame.origin.y = ([self contentOffset].y + headerOffset.y);
-        if(CGRectGetMaxY(sectionHeaderFrame) > CGRectGetMaxY([sectionLayout contentFrame]))
-            sectionHeaderFrame.origin.y = CGRectGetMaxY([sectionLayout contentFrame]) - CGRectGetHeight(sectionHeaderFrame) ;
-        
-    }else if(layoutStyle == NRGridViewLayoutStyleHorizontal){
-        if(CGRectGetMinX(sectionHeaderFrame) < [self contentOffset].x)
-            sectionHeaderFrame.origin.x = [self contentOffset].x;
-        if(CGRectGetMaxX(sectionHeaderFrame) > CGRectGetMaxX([sectionLayout contentFrame]))
-            sectionHeaderFrame.origin.x = CGRectGetMaxX([sectionLayout contentFrame]) - CGRectGetWidth(sectionHeaderFrame) ;
-        
     }
     
     return sectionHeaderFrame; 
@@ -1704,7 +1720,7 @@ static CGFloat const _kNRGridViewDefaultHeaderWidth = 30.; // layout style = hor
         if(firstVisibleCellIndex + cellIndexesRange > numberOfCellsInSection)
             cellIndexesRange = numberOfCellsInSection - firstVisibleCellIndex;
         if(cellIndexesRange <0)
-            cellIndexesRange=0;            
+            cellIndexesRange=0;
         
         
         NSMutableIndexSet *sectionVisibleContentIndexes = [NSMutableIndexSet indexSetWithIndexesInRange:NSMakeRange(firstVisibleCellIndex, cellIndexesRange)];
@@ -1728,6 +1744,7 @@ static CGFloat const _kNRGridViewDefaultHeaderWidth = 30.; // layout style = hor
         [sectionBackgroundView setFrame:[self rectForBackgroundViewInSection:sectionIndex]];
         if ([sectionBackgroundView superview] == nil)
             [self addSubview:sectionBackgroundView];
+        NSLog(@"sectionBackgroundView=%@", sectionBackgroundView);
         [self sendSubviewToBack:sectionBackgroundView];
     }
     
