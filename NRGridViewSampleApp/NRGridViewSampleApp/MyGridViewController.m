@@ -152,7 +152,8 @@ static BOOL const _kNRGridViewSampleCrazyScrollEnabled = NO; // For the lulz.
         
         [[cell textLabel] setFont:[UIFont boldSystemFontOfSize:11.]];
         [[cell detailedTextLabel] setFont:[UIFont systemFontOfSize:11.]];
-
+        cell.backgroundColor = [UIColor clearColor];
+        cell.selectionBackgroundView.backgroundColor = [UIColor clearColor];
     }
     
     cell.imageView.image = (indexPath.section == 0 && _firstSectionReloaded ? nil : [UIImage imageNamed:[NSString stringWithFormat:@"%i.png", (indexPath.row%7)]]);
@@ -187,6 +188,15 @@ static BOOL const _kNRGridViewSampleCrazyScrollEnabled = NO; // For the lulz.
     
     [menuController setMenuVisible:YES animated:YES];
     
+}
+
+- (UIView *)gridView:(NRGridView *)gridView backgroundViewInSection:(NSInteger)section {
+    if (section%2 == 0) {
+        UIView * view = [[UIView alloc] initWithFrame:CGRectMake(0, 0, 0, 0)];
+        view.backgroundColor = [UIColor cyanColor];
+        return view;
+    }
+    return nil;
 }
 
 #pragma mark - UIMenuController Actions

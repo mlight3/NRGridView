@@ -94,7 +94,7 @@ static CGFloat const _kNRGridViewHeaderContentPadding = 10.;
 @property (nonatomic, assign) NSInteger section, numberOfItems;
 @property (nonatomic, assign) CGRect headerFrame, contentFrame, footerFrame;
 @property (nonatomic, assign) NRGridViewLayoutStyle layoutStyle;
-@property (nonatomic, retain) UIView *headerView, *footerView;
+@property (nonatomic, retain) UIView *headerView, *footerView, *backgroundView;
 @property (nonatomic, readonly) CGRect sectionFrame;
 @end
 @implementation NRGridViewSectionLayout
@@ -135,6 +135,15 @@ static CGFloat const _kNRGridViewHeaderContentPadding = 10.;
     }
 }
 
+- (void)setBackgroundView:(UIView *)backgroundView
+{
+    if (_backgroundView != backgroundView)
+    {
+        [_backgroundView removeFromSuperview];
+        [_backgroundView release];
+        _backgroundView = [backgroundView retain];
+    }
+}
 
 - (void)dealloc
 {
@@ -283,7 +292,7 @@ static CGFloat const _kNRGridViewDefaultHeaderWidth = 30.; // layout style = hor
 @dynamic selectedCellIndexPath/**Deprecated*/;
 @synthesize allowsMultipleSelections   = _allowsMultipleSelections;
 
-#pragma mark - Initjkl;4
+#pragma mark - Init
 
 - (void)__commonInit
 {
@@ -455,6 +464,7 @@ static CGFloat const _kNRGridViewDefaultHeaderWidth = 30.; // layout style = hor
                                                                      && [[(UINavigationController*)[(UIViewController*)[self dataSource] parentViewController] navigationBar] isTranslucent]);
 
         _gridViewDataSourceRespondsTo.gridCellSize = [dataSource respondsToSelector:@selector(gridView:gridCellSizeInSection:)];
+        _gridViewDataSourceRespondsTo.backgroundView = [dataSource respondsToSelector:@selector(gridView:backgroundViewInSection:)];
         [self didChangeValueForKey:@"dataSource"];
     }
 }
@@ -785,6 +795,12 @@ static CGFloat const _kNRGridViewDefaultHeaderWidth = 30.; // layout style = hor
 }
 
 
+- (BOOL)__hasBackgroundViewInSection:(NSInteger)sectionIndex
+{
+    return (_gridViewDataSourceRespondsTo.backgroundView && [[self dataSource] gridView:self
+                                                                  backgroundViewInSection:sectionIndex] !=nil);
+}
+
 #pragma mark - Visible Sections
 
 - (CGRect)rectForSection:(NSInteger)section
@@ -958,6 +974,51 @@ static CGFloat const _kNRGridViewDefaultHeaderWidth = 30.; // layout style = hor
     return [footer autorelease];
 }
 
+#pragma mark - Section background
+
+- (CGRect)rectForBackgroundViewInSection:(NSInteger)section
+{
+    NRGridViewSectionLayout *sectionLayout = [self __sectionLayoutAtIndex:section];
+    return [sectionLayout sectionFrame];
+}
+
+- (UIView*)__visibleBackgroundViewForSection:(NSInteger)section
+{
+    if([self __hasBackgroundViewInSection:section] == NO)
+        return nil;
+    
+    UIView *visibleBackgroundView = nil;
+    for(NRGridViewSectionLayout *sectionLayout in _sectionLayouts)
+    {
+        if([sectionLayout section] == section)
+        {
+            visibleBackgroundView = [[sectionLayout backgroundView] retain];
+            break;
+        }
+    }
+    return [visibleBackgroundView autorelease];
+}
+
+- (UIView*)__backgroundViewForSection:(NSInteger)section
+{
+    if([self __hasBackgroundViewInSection:section] == NO)
+        return nil;
+    
+    NRGridViewSectionLayout* sectionLayout = [self __sectionLayoutAtIndex:section];
+    UIView *backgroundView = [[sectionLayout backgroundView] retain];
+    
+    if(backgroundView == nil){
+        // header needs to be created...
+        if(_gridViewDataSourceRespondsTo.backgroundView)
+        {
+            backgroundView = [[[self dataSource] gridView:self
+                                  backgroundViewInSection:section] retain];
+        }
+        [sectionLayout setBackgroundView:backgroundView];
+    }
+    
+    return [backgroundView autorelease];
+}
 
 #pragma mark - Cells Stuff
 
@@ -1589,7 +1650,7 @@ static CGFloat const _kNRGridViewDefaultHeaderWidth = 30.; // layout style = hor
     {
         NSInteger sectionIndex = [sectionLayout section];
         CGRect sectionContentFrame = [sectionLayout contentFrame];
-        
+
         UIView *sectionHeaderView = [self __headerForSection:sectionIndex];
         [sectionHeaderView setFrame:[self __rectForHeaderInSection:sectionIndex 
                                                   usingLayoutStyle:layoutStyle]];
@@ -1663,7 +1724,11 @@ static CGFloat const _kNRGridViewDefaultHeaderWidth = 30.; // layout style = hor
              }
          }];
         
-        
+        UIView * sectionBackgroundView = [self __backgroundViewForSection:sectionIndex];
+        [sectionBackgroundView setFrame:[self rectForBackgroundViewInSection:sectionIndex]];
+        if ([sectionBackgroundView superview] == nil)
+            [self addSubview:sectionBackgroundView];
+        [self sendSubviewToBack:sectionBackgroundView];
     }
     
     [self bringSubviewToFront:verticalScrollIndicator];
