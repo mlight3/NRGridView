@@ -281,18 +281,8 @@ static CGFloat const _kNRGridViewDefaultHeaderWidth = 30.; // layout style = hor
 
 @dynamic delegate; // Dynamic because inherited from UIScrollView's delegate property.
 
-@synthesize layoutStyle = _layoutStyle;
-@synthesize style = _style;
-@synthesize dataSource = _dataSource;
-@synthesize cellSize = _cellSize;
-@synthesize longPressOptions = _longPressOptions;
-
-@synthesize gridHeaderView = _gridHeaderView, gridFooterView = _gridFooterView;
-@synthesize stickyGridHeaderView = _stickyGridHeaderView, stickyGridFooterView = _stickyGridFooterView;
-
 @dynamic visibleCells, indexPathsForVisibleCells;
 @dynamic selectedCellIndexPath/**Deprecated*/;
-@synthesize allowsMultipleSelections   = _allowsMultipleSelections;
 
 #pragma mark - Init
 
@@ -1413,7 +1403,7 @@ static CGFloat const _kNRGridViewDefaultHeaderWidth = 30.; // layout style = hor
                                                      sectionFooterSize.height)];
 
             
-            contentSize.height += CGRectGetHeight([sectionLayout sectionFrame]);
+            contentSize.height += CGRectGetHeight([sectionLayout sectionFrame]) + _spacingBetweenSections;
             
         }else if([self layoutStyle] == NRGridViewLayoutStyleHorizontal)
         {
@@ -1435,7 +1425,7 @@ static CGFloat const _kNRGridViewDefaultHeaderWidth = 30.; // layout style = hor
                                                      sectionFooterSize.width, 
                                                      sectionFooterSize.height)];
             
-            contentSize.width += CGRectGetWidth([sectionLayout sectionFrame]);
+            contentSize.width += CGRectGetWidth([sectionLayout sectionFrame]) + _spacingBetweenSections;
         }
         
         [_sectionLayouts addObject:sectionLayout];

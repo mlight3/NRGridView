@@ -124,7 +124,7 @@
         [tempGridView setCellSize:CGSizeMake(160, 120)];
         [tempGridView setDelegate:self];
         [tempGridView setDataSource:self];
-        
+        [tempGridView setContentInset:UIEdgeInsetsMake(0, 0, 0, -100)];
         [self setGridView:tempGridView];
         [tempGridView release];
     }

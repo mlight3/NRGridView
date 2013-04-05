@@ -148,6 +148,9 @@ static CGSize const kNRGridViewDefaultCellSize = {50, 70};
 @property (nonatomic, readonly) NSArray     *visibleCells;
 @property (nonatomic, readonly) NSArray     *indexPathsForVisibleCells;
 
+@property (nonatomic, assign) CGFloat spacingBetweenSections;
+//@property (nonatomic, assign) CGFloat spacingBetweenCells;
+
 /** Reloading the GridView */
 - (void)reloadData;
 - (void)reloadCellsAtIndexPaths:(NSArray *)indexPaths withCellAnimation:(NRGridViewCellAnimation)cellAnimation;
