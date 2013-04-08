@@ -98,7 +98,7 @@ static CGFloat const _kNRGridViewHeaderContentPadding = 10.;
 @property (nonatomic, readonly) CGRect sectionFrame;
 @end
 @implementation NRGridViewSectionLayout
-ss section,numberOfItems, headerFrame, contentFrame, footerFrame, layoutStyle;
+@synthesize section,numberOfItems, headerFrame, contentFrame, footerFrame, layoutStyle;
 @synthesize headerView = _headerView;
 @synthesize footerView = _footerView;
 
