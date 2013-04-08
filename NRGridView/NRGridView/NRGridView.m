@@ -98,7 +98,7 @@ static CGFloat const _kNRGridViewHeaderContentPadding = 10.;
 @property (nonatomic, readonly) CGRect sectionFrame;
 @end
 @implementation NRGridViewSectionLayout
-@synthesize section,numberOfItems, headerFrame, contentFrame, footerFrame, layoutStyle;
+ss section,numberOfItems, headerFrame, contentFrame, footerFrame, layoutStyle;
 @synthesize headerView = _headerView;
 @synthesize footerView = _footerView;
 
@@ -669,10 +669,8 @@ static CGFloat const _kNRGridViewDefaultHeaderWidth = 30.; // layout style = hor
 
 - (BOOL)__hasHeaderInSection:(NSInteger)sectionIndex
 {
-    return ( (_gridViewDataSourceRespondsTo.titleForHeader && [[self dataSource] gridView:self 
-                                                                  titleForHeaderInSection:sectionIndex] !=nil)
-            || (_gridViewDataSourceRespondsTo.viewForHeader && [[self dataSource] gridView:self 
-                                                                    viewForHeaderInSection:sectionIndex] !=nil) );
+    return ( _gridViewDataSourceRespondsTo.titleForHeader
+            || _gridViewDataSourceRespondsTo.viewForHeader);
 }
 
 
@@ -750,10 +748,8 @@ static CGFloat const _kNRGridViewDefaultHeaderWidth = 30.; // layout style = hor
 
 - (BOOL)__hasFooterInSection:(NSInteger)sectionIndex
 {
-    return ( (_gridViewDataSourceRespondsTo.titleForFooter && [[self dataSource] gridView:self 
-                                                                  titleForFooterInSection:sectionIndex] !=nil)
-            || (_gridViewDataSourceRespondsTo.viewForFooter && [[self dataSource] gridView:self 
-                                                                    viewForFooterInSection:sectionIndex] !=nil) );
+    return ( _gridViewDataSourceRespondsTo.titleForFooter
+            || _gridViewDataSourceRespondsTo.viewForFooter );
 }
 
 - (CGFloat)__widthForFooterAtSectionIndex:(NSInteger)sectionIndex
@@ -801,8 +797,7 @@ static CGFloat const _kNRGridViewDefaultHeaderWidth = 30.; // layout style = hor
 
 - (BOOL)__hasBackgroundViewInSection:(NSInteger)sectionIndex
 {
-    return (_gridViewDataSourceRespondsTo.backgroundView && [[self dataSource] gridView:self
-                                                                  backgroundViewInSection:sectionIndex] !=nil);
+    return (_gridViewDataSourceRespondsTo.backgroundView);
 }
 
 #pragma mark - Visible Sections
@@ -1734,7 +1729,6 @@ static CGFloat const _kNRGridViewDefaultHeaderWidth = 30.; // layout style = hor
         [sectionBackgroundView setFrame:[self rectForBackgroundViewInSection:sectionIndex]];
         if ([sectionBackgroundView superview] == nil)
             [self addSubview:sectionBackgroundView];
-        NSLog(@"sectionBackgroundView=%@", sectionBackgroundView);
         [self sendSubviewToBack:sectionBackgroundView];
     }
     
